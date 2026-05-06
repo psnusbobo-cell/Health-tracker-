@@ -2,179 +2,254 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مرشد صحتي الذكي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>مرشدي الصحي الذكي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .card { background: #1e293b; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; border: 1px solid #334155; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .active-nav { color: #0d9488; font-weight: bold; }
+        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
-<body class="p-4 pb-20">
+<body class="flex flex-col min-h-screen max-w-xl mx-auto shadow-2xl bg-white relative">
 
-    <header class="mb-6 text-center">
-        <h1 class="text-2xl font-bold text-sky-400">مرشد صحتي الذكي</h1>
-        <div id="ai-mentor-box" class="mt-4 p-3 bg-sky-900/30 border border-sky-500/50 rounded-lg text-sm text-sky-200">
-            جاري تحليل بياناتك... ابدأ بإضافة قراءاتك اليوم.
+    <header class="bg-teal-700 text-white p-4 flex justify-between items-center shadow-md sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="bg-white/20 p-2 rounded-lg"><i data-lucide="activity"></i></div>
+            <div>
+                <h1 class="text-lg font-bold leading-none">مرشدي الصحي الذكي</h1>
+                <p class="text-[10px] text-teal-100 mt-1">المساعد الشخصي المدعوم بالذكاء الاصطناعي</p>
+            </div>
         </div>
     </header>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 flex justify-around p-3 z-50">
-        <button onclick="showTab('entry')" class="flex flex-col items-center text-sky-400">
-            <span>➕</span><span class="text-xs">إضافة</span>
-        </button>
-        <button onclick="showTab('dashboard')" class="flex flex-col items-center text-slate-400">
-            <span>📊</span><span class="text-xs">الرسوم</span>
-        </button>
-        <button onclick="showTab('settings')" class="flex flex-col items-center text-slate-400">
-            <span>💊</span><span class="text-xs">الأدوية</span>
-        </button>
-    </nav>
+    <main class="flex-1 p-4 pb-24 overflow-y-auto w-full">
+        <div id="dashboard" class="tab-content active space-y-6">
+            <header>
+                <h2 class="text-2xl font-bold text-slate-800">مرحباً بك</h2>
+                <p class="text-sm text-slate-500">مرشدك الصحي الشخصي يعمل من أجلك.</p>
+            </header>
+            <section id="ai-insight-card" class="bg-gradient-to-l from-white to-teal-50 rounded-xl shadow-sm border border-teal-100 p-4 relative overflow-hidden transition-all">
+                <div class="flex items-start gap-4">
+                    <div class="bg-teal-600 text-white p-3 rounded-full shrink-0 shadow-lg relative">
+                        <i data-lucide="bot"></i>
+                        <span class="absolute top-0 right-0 w-3 h-3 bg-teal-400 border-2 border-white rounded-full"></span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="font-bold text-teal-800 text-sm">رؤى صحية اليوم</h3>
+                            <span class="text-[9px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full uppercase">نشط</span>
+                        </div>
+                        <p id="insight-text" class="text-sm text-slate-700 leading-relaxed italic">جاري تحليل البيانات...</p>
+                    </div>
+                </div>
+            </section>
+            <div id="summary-stats" class="grid grid-cols-2 gap-4"></div>
+            <div class="flex items-start gap-3 bg-slate-100 rounded-xl p-4 mt-8">
+                <i data-lucide="info" class="text-slate-500 shrink-0" size="18"></i>
+                <p class="text-[10px] text-slate-500 leading-relaxed">بناءً على الإرشادات الطبية القياسية. هذا التطبيق لا يقدم تشخيصاً طبياً. استشر طبيبك دائماً.</p>
+            </div>
+        </div>
 
-    <div id="entry" class="tab-content active">
-        <div class="card">
-            <h2 class="text-lg font-bold mb-4">إضافة قياس جديد</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm mb-1">ضغط الدم (الانقباضي/الانبساطي)</label>
-                    <div class="flex gap-2">
-                        <input id="sys" type="number" placeholder="120" class="w-full bg-slate-800 border border-slate-600 p-2 rounded text-white">
-                        <input id="dia" type="number" placeholder="80" class="w-full bg-slate-800 border border-slate-600 p-2 rounded text-white">
+        <div id="entry" class="tab-content space-y-5">
+            <h2 class="text-xl font-bold text-slate-800">إدخال بيانات جديدة</h2>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-1">الانقباضي (Sys)</label>
+                        <input id="sys" type="number" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-teal-500" placeholder="120">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-1">الانبساطي (Dia)</label>
+                        <input id="dia" type="number" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-teal-500" placeholder="80">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-1">السكر (mg/dL)</label>
+                        <input id="glucose" type="number" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-teal-500" placeholder="90">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-1">الحالة</label>
+                        <select id="glucoseContext" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm outline-none">
+                            <option value="">اختر..</option>
+                            <option value="fasting">صائم</option>
+                            <option value="after_meal">بعد الوجبة</option>
+                        </select>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm mb-1">مستوى السكر (mg/dL)</label>
-                    <input id="sugar" type="number" placeholder="100" class="w-full bg-slate-800 border border-slate-600 p-2 rounded text-white">
+                    <label class="block text-[10px] font-bold text-slate-600 mb-2">الأدوية المرتبطة</label>
+                    <div id="med-tags-entry" class="flex flex-wrap gap-2"></div>
                 </div>
-                <div>
-                    <label class="block text-sm mb-1">الأدوية المأخوذة</label>
-                    <div id="med-tags-container" class="flex flex-wrap gap-2 py-2">
-                        </div>
-                </div>
-                <button onclick="saveData()" class="w-full bg-sky-600 hover:bg-sky-500 p-3 rounded-lg font-bold transition">حفظ القياس</button>
+                <button onclick="saveLog()" class="w-full bg-teal-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-all">حفظ القراءة</button>
             </div>
         </div>
-    </div>
 
-    <div id="dashboard" class="tab-content">
-        <div class="card">
-            <canvas id="healthChart"></canvas>
-        </div>
-        <button onclick="generateAIPrompt()" class="w-full bg-emerald-600 p-3 rounded-lg font-bold mb-4">نسخ تقرير الـ AI للمناقشة</button>
-        <div id="history-list" class="space-y-2"></div>
-    </div>
-
-    <div id="settings" class="tab-content">
-        <div class="card">
-            <h2 class="text-lg font-bold mb-4">إدارة الأدوية</h2>
-            <div class="flex gap-2 mb-4">
-                <input id="new-med" type="text" placeholder="اسم الدواء" class="w-full bg-slate-800 border border-slate-600 p-2 rounded">
-                <button onclick="addMed()" class="bg-sky-600 px-4 rounded">+</button>
+        <div id="charts" class="tab-content space-y-6">
+            <h2 class="text-xl font-bold text-slate-800">إحصائيات المتابعة</h2>
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+                <canvas id="mainChart" height="250"></canvas>
             </div>
-            <ul id="meds-list" class="space-y-2"></ul>
         </div>
-    </div>
+
+        <div id="meds" class="tab-content space-y-6">
+            <h2 class="text-xl font-bold text-slate-800">إدارة الأدوية</h2>
+            <div class="flex gap-2">
+                <input id="new-med-input" type="text" class="flex-1 bg-white border border-slate-200 rounded-xl p-3 outline-none" placeholder="اسم الدواء..">
+                <button onclick="addMedication()" class="bg-teal-600 text-white px-5 rounded-xl font-bold">+</button>
+            </div>
+            <ul id="medications-list" class="space-y-2"></ul>
+        </div>
+
+        <div id="ai" class="tab-content space-y-6 text-center">
+            <h2 class="text-xl font-bold text-slate-800">جسر الذكاء الاصطناعي</h2>
+            <div class="bg-slate-900 text-slate-300 p-4 rounded-2xl text-right font-mono text-[10px] h-64 overflow-y-auto border border-slate-700" id="raw-report"></div>
+            <button onclick="copyReport()" class="w-full bg-teal-600 text-white font-bold py-4 rounded-xl mt-4">نسخ التقرير الشامل لـ Gemini</button>
+        </div>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center h-16 max-w-xl mx-auto z-50 shadow-up">
+        <button onclick="showTab('dashboard')" class="nav-item flex flex-col items-center gap-1 active-nav"><i data-lucide="home"></i><span class="text-[9px]">الرئيسية</span></button>
+        <button onclick="showTab('entry')" class="nav-item flex flex-col items-center gap-1 text-slate-400"><i data-lucide="plus-circle"></i><span class="text-[9px]">إضافة</span></button>
+        <button onclick="showTab('charts')" class="nav-item flex flex-col items-center gap-1 text-slate-400"><i data-lucide="activity"></i><span class="text-[9px]">إحصائيات</span></button>
+        <button onclick="showTab('meds')" class="nav-item flex flex-col items-center gap-1 text-slate-400"><i data-lucide="pill"></i><span class="text-[9px]">الأدوية</span></button>
+        <button onclick="showTab('ai')" class="nav-item flex flex-col items-center gap-1 text-slate-400"><i data-lucide="bot"></i><span class="text-[9px]">ذكاء</span></button>
+    </nav>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('healthDB')) || { readings: [], meds: [] };
+        // State Management
+        let logs = JSON.parse(localStorage.getItem('myhealth_logs')) || [];
+        let medications = JSON.parse(localStorage.getItem('myhealth_meds')) || [];
 
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active-nav'); n.classList.add('text-slate-400'); });
+            
             document.getElementById(tabId).classList.add('active');
-            if(tabId === 'dashboard') renderChart();
+            event.currentTarget.classList.add('active-nav');
+            event.currentTarget.classList.remove('text-slate-400');
+
+            if(tabId === 'dashboard') initDashboard();
+            if(tabId === 'charts') initCharts();
+            if(tabId === 'meds') renderMeds();
+            if(tabId === 'ai') generateReport();
             renderMedTags();
         }
 
-        function addMed() {
-            const name = document.getElementById('new-med').value;
-            if(name) {
-                db.meds.push(name);
-                saveDB();
-                document.getElementById('new-med').value = '';
+        function saveLog() {
+            const log = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                sys: document.getElementById('sys').value,
+                dia: document.getElementById('dia').value,
+                glucose: document.getElementById('glucose').value,
+                glucoseContext: document.getElementById('glucoseContext').value,
+                meds: Array.from(document.querySelectorAll('.med-checkbox:checked')).map(c => c.value)
+            };
+            if(!log.sys && !log.glucose) return;
+            logs.push(log);
+            localStorage.setItem('myhealth_logs', JSON.stringify(logs));
+            alert("تم الحفظ بنجاح ✅");
+            showTab('dashboard');
+        }
+
+        function initDashboard() {
+            const latest = logs[logs.length-1];
+            const text = document.getElementById('insight-text');
+            const summary = document.getElementById('summary-stats');
+            
+            if(!latest) {
+                text.innerText = "أهلاً بك! ابدأ بإضافة قراءاتك لمتابعة حالتك.";
+                summary.innerHTML = "";
+                return;
+            }
+
+            // AI Insight Logic (Same as React code)
+            let msg = "قراءاتك تبدو مستقرة. استمر في روتينك الصحي!";
+            if(latest.sys > 140) msg = `⚠️ ضغطك مرتفع (${latest.sys}/${latest.dia}). يرجى الراحة ومراقبة الأعراض.`;
+            text.innerText = msg;
+
+            summary.innerHTML = `
+                <div class="bg-white rounded-xl p-4 border border-slate-200 text-center">
+                    <p class="text-[10px] text-slate-500 mb-1">آخر ضغط</p>
+                    <p class="font-bold text-teal-600">${latest.sys || '-'}/${latest.dia || '-'}</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 border border-slate-200 text-center">
+                    <p class="text-[10px] text-slate-500 mb-1">آخر سكر</p>
+                    <p class="font-bold text-rose-500">${latest.glucose || '-'} <small class="text-[8px]">mg/dL</small></p>
+                </div>
+            `;
+        }
+
+        function initCharts() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if(window.hChart) window.hChart.destroy();
+            const recent = logs.slice(-10);
+            window.hChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: recent.map(l => l.date.split('T')[0].slice(5)),
+                    datasets: [
+                        { label: 'الضغط', data: recent.map(l => l.sys), borderColor: '#0d9488', tension: 0.3 },
+                        { label: 'السكر', data: recent.map(l => l.glucose), borderColor: '#fb7185', borderDash: [5,5], tension: 0.3 }
+                    ]
+                },
+                options: { plugins: { legend: { labels: { font: { family: 'Cairo' } } } } }
+            });
+        }
+
+        function addMedication() {
+            const input = document.getElementById('new-med-input');
+            if(input.value && !medications.includes(input.value)) {
+                medications.push(input.value);
+                localStorage.setItem('myhealth_meds', JSON.stringify(medications));
+                input.value = '';
                 renderMeds();
-                renderMedTags();
             }
         }
 
         function renderMeds() {
-            const list = document.getElementById('meds-list');
-            list.innerHTML = db.meds.map((m, i) => `<li class="flex justify-between bg-slate-800 p-2 rounded"><span>${m}</span><button onclick="db.meds.splice(${i},1);saveDB();renderMeds();" class="text-red-400 text-xs">حذف</button></li>`).join('');
+            const list = document.getElementById('medications-list');
+            list.innerHTML = medications.map((m, i) => `
+                <li class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center">
+                    <span class="text-sm font-bold text-slate-700">${m}</span>
+                    <button onclick="medications.splice(${i},1); localStorage.setItem('myhealth_meds', JSON.stringify(medications)); renderMeds();" class="text-red-400"><i data-lucide="trash-2" size="18"></i></button>
+                </li>
+            `).join('');
+            lucide.createIcons();
         }
 
         function renderMedTags() {
-            const container = document.getElementById('med-tags-container');
-            container.innerHTML = db.meds.map(m => `<label class="inline-flex items-center bg-slate-700 px-3 py-1 rounded-full text-xs cursor-pointer"><input type="checkbox" value="${m}" class="hidden peer"><span class="peer-checked:text-sky-400">${m}</span></label>`).join('');
+            const container = document.getElementById('med-tags-entry');
+            container.innerHTML = medications.map(m => `
+                <label class="flex items-center gap-1 bg-slate-100 px-3 py-1 rounded-full text-[10px] cursor-pointer border border-transparent has-[:checked]:border-teal-500 has-[:checked]:bg-teal-50">
+                    <input type="checkbox" value="${m}" class="med-checkbox hidden"> <span>${m}</span>
+                </label>
+            `).join('');
         }
 
-        function saveData() {
-            const sys = document.getElementById('sys').value;
-            const dia = document.getElementById('dia').value;
-            const sugar = document.getElementById('sugar').value;
-            const selectedMeds = Array.from(document.querySelectorAll('#med-tags-container input:checked')).map(i => i.value);
-            
-            if(!sys && !sugar) return alert("يرجى إدخال قياس واحد على الأقل");
-
-            db.readings.push({
-                date: new Date().toLocaleString('ar-SA'),
-                timestamp: Date.now(),
-                sys, dia, sugar, meds: selectedMeds
-            });
-            saveDB();
-            alert("تم الحفظ بنجاح");
-            showTab('dashboard');
+        function generateReport() {
+            const report = `تقرير صحي مخصص\nالتاريخ: ${new Date().toLocaleString('ar-SA')}\n\n` + 
+                           `آخر 10 قراءات:\n` + 
+                           logs.slice(-10).map(l => `- [${l.date.slice(0,10)}] ضغط: ${l.sys}/${l.dia}, سكر: ${l.glucose}`).join('\n');
+            document.getElementById('raw-report').innerText = report + "\n\nحلل هذه البيانات وقدم توصيات طبية.";
         }
 
-        function saveDB() {
-            localStorage.setItem('healthDB', JSON.stringify(db));
-            updateAIMentor();
-        }
-
-        function updateAIMentor() {
-            const last = db.readings[db.readings.length - 1];
-            const box = document.getElementById('ai-mentor-box');
-            if(!last) return;
-            
-            if(last.sys > 140) {
-                box.innerHTML = "⚠️ سيدي، ضغطك الانقباضي مرتفع قليلاً (${last.sys}). هل شعرت بالتوتر اليوم؟";
-                box.className = "mt-4 p-3 bg-red-900/30 border border-red-500/50 rounded-lg text-sm text-red-200";
-            } else {
-                box.innerHTML = "✅ قراءاتك تبدو مستقرة. استمر في نشاطك البدني والسباحة!";
-                box.className = "mt-4 p-3 bg-emerald-900/30 border border-emerald-500/50 rounded-lg text-sm text-emerald-200";
-            }
-        }
-
-        function generateAIPrompt() {
-            const report = JSON.stringify(db.readings.slice(-10));
-            const prompt = `أنا مريض أتابع حالتي، إليك آخر 10 قراءات (ضغط وسكر) مع الأدوية المتناولة: ${report}. بصفتك خبيراً طبياً، حلل الأنماط واقترح عليّ أسئلة لمناقشتها مع طبيبي.`;
-            navigator.clipboard.writeText(prompt);
-            alert("تم نسخ التقرير! يمكنك لصقه الآن في Gemini للحصول على تحليل معمق.");
-        }
-
-        function renderChart() {
-            const ctx = document.getElementById('healthChart').getContext('2d');
-            if(window.myChart) window.myChart.destroy();
-            
-            const labels = db.readings.slice(-7).map(r => r.date.split(' ')[0]);
-            window.myChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'انقباضي', data: db.readings.slice(-7).map(r => r.sys), borderColor: '#38bdf8', tension: 0.1 },
-                        { label: 'سكر', data: db.readings.slice(-7).map(r => r.sugar), borderColor: '#fbbf24', tension: 0.1 }
-                    ]
-                },
-                options: { plugins: { legend: { labels: { color: '#fff' } } } }
-            });
+        function copyReport() {
+            navigator.clipboard.writeText(document.getElementById('raw-report').innerText);
+            alert("تم نسخ التقرير! يمكنك لصقه الآن في Gemini.");
         }
 
         // Initialize
-        renderMeds();
-        updateAIMentor();
+        lucide.createIcons();
+        initDashboard();
     </script>
 </body>
 </html>
